@@ -5,13 +5,18 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+    The main classes or objects that the UML diagram is built around are the user/owner class, pet class and task class.
 - What classes did you include, and what responsibilities did you assign to each?
-
+    Owner class will have the basic owner information
+    The pet class will have the pet's information
+    Task class will have the type of task or what needs ot be done with the time and priority 
 **b. Design changes**
 
 - Did your design change during implementation?
+    Yes.
 - If yes, describe at least one change and why you made it.
-
+    I added a scheduler class which will gather all the tasks and arrange them into a proper schedule accordingly.
+    I decided to add userID and petID attributes which are unique id for each user and pet to make the system better when lookin up the user or the pet with same name.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
@@ -19,13 +24,15 @@
 **a. Constraints and priorities**
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
+    Time and Priority
 - How did you decide which constraints mattered most?
-
+    A task need to be done at a certain time and if there are multiple tasks to be done, it will depend on the priority to figure out which tasks need to be done first.
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
+    It does not really look into the preferences
 - Why is that tradeoff reasonable for this scenario?
-
+    The time and the priority will basically do the same thing as preferences. That is what i believe
 ---
 
 ## 3. AI Collaboration

@@ -1,6 +1,6 @@
-classDiagram
-    %% PawPal+ UML diagram for owner, pet, task, and scheduler classes.
 
+const pawpalClassDiagram = `
+classDiagram
     class Owner {
         +str owner_id
         +str name
@@ -44,3 +44,6 @@ classDiagram
     Scheduler --> Owner : uses
     Scheduler --> Pet : uses
     Scheduler --> Task : schedules
+`;
+
+export default pawpalClassDiagram;
