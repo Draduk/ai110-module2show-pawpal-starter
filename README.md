@@ -71,16 +71,31 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
 
 # Run with coverage:
 pytest --cov
 ```
 
-Sample test output:
+Description:
 
-```
-# Paste your pytest output here
+- Tests cover basic `Task` behavior, `Pet` and `Owner` relationships, and core
+	scheduler logic: chronological sorting (`Scheduler.sort_tasks_by_time()`),
+	recurrence handling (`Scheduler.mark_task_complete_with_recurrence()`), and
+	lightweight conflict detection (`Scheduler.get_conflict_warnings()`).
+
+Sample test run (captured output from `python -m pytest`):
+
+```console
+============================= test session starts ==============================
+platform darwin -- Python 3.13.9, pytest-8.4.2, pluggy-1.5.0
+rootdir: /Users/tenzindraduk/Desktop/ai110-module2show-pawpal-starter
+plugins: anyio-4.10.0
+collected 5 items                                                              
+
+tests/test_pawpal.py .....                                               [100%]
+
+============================== 5 passed in 0.02s ===============================
 ```
 
 ## 📐 Smarter Scheduling
