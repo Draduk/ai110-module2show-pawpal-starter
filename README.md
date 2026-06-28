@@ -89,10 +89,10 @@ Sample test output:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_tasks_by_time()` | Sorts tasks by exact `time` (HH:MM) when present, then by preferred period, priority, and duration. Uses a numeric minutes-since-midnight key for reliable chronological ordering.
+| Filtering | `Scheduler.filter_tasks()` / `Scheduler.filter_tasks_by_time()` | `filter_tasks()` filters by `completed` status and by pet name when scheduling across an owner. `filter_tasks_by_time()` greedily selects tasks that fit into available minutes.
+| Conflict detection | `Scheduler.detect_conflicts()` / `Scheduler.get_conflict_warnings()` | `detect_conflicts()` checks pairwise interval overlaps for tasks with exact `time`. `get_conflict_warnings()` returns human-readable warnings instead of raising errors.
+| Recurring tasks | `Task.create_next_occurrence()` / `Scheduler.mark_task_complete_with_recurrence()` | When a recurring task (`daily` or `weekly`) is marked complete, `mark_task_complete_with_recurrence()` creates a new `Task` instance for the next occurrence and attaches it to the same pet.
 
 ## 📸 Demo Walkthrough
 

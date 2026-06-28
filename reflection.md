@@ -30,9 +30,12 @@
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
-    It does not really look into the preferences
+    The `detect_conflicts()` method uses an O(n²) nested loop to check all pairs of tasks for time overlaps. A more concise Pythonic version using list comprehensions was suggested, but the current implementation prioritizes readability over brevity. The nested loops make the overlap logic transparent—comparing interval pairs `(a0, a1)` and `(b0, b1)` with the non-overlap condition `a1 <= b0 or b1 <= a0`. The alternative list comprehension approach compresses this into a single expression, making it harder for team members to quickly verify the conflict detection logic.
+
+    Additionally, the scheduler only detects exact-time conflicts (tasks with `time` attributes set to HH:MM). Tasks without explicit times are treated as flexible ("anytime"), so no conflicts are flagged for them. This simplifies the algorithm but may miss user intent if two flexible tasks should not run concurrently.
+
 - Why is that tradeoff reasonable for this scenario?
-    The time and the priority will basically do the same thing as preferences. That is what i believe
+    Pet care scheduling is typically small-scale (5–20 tasks per pet per day), so O(n²) performance is acceptable. Readability is prioritized because future maintainers (or the user reviewing code) need to quickly understand how conflicts are detected. Exact-time detection is reasonable because users can opt into precision scheduling by specifying times; flexible tasks represent lower-priority activities that are easier to reschedule.
 ---
 
 ## 3. AI Collaboration

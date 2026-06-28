@@ -40,50 +40,116 @@ At minimum, your system should:
 st.divider()
 
 st.subheader("Quick Demo Inputs (UI only)")
+
+# Initialize session state for owner and pets (persist across reruns)
+if "owner" not in st.session_state:
+    st.session_state.owner = None
+if "pets" not in st.session_state:
+    st.session_state.pets = []
+if "selected_pet" not in st.session_state:
+    st.session_state.selected_pet = None
+
+# Owner name input (used when creating the Owner object)
 owner_name = st.text_input("Owner name", value="Jordan")
+
+# Button creates the Owner once and stores it in session_state.owner
+if st.button("Initialize Owner"):
+    st.session_state.owner = Owner(owner_id="o1", name=owner_name)
+    st.success(f"Created owner: {owner_name}")
+
+# Show current owner when available
+if st.session_state.owner:
+    st.info(f"Owner: {st.session_state.owner.name}")
+
+# Add pets section
+st.markdown("### Add Pets")
 pet_name = st.text_input("Pet name", value="Mochi")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
+if st.button("Add pet"):
+    # Create a new Pet and register it with the Owner and session state.
+    # Uses Owner.add_pet() to keep bidirectional link consistent.
+    if st.session_state.owner is None:
+        st.error("Please create an owner first.")
+    else:
+        new_pet = Pet(pet_id=f"p{len(st.session_state.pets) + 1}", name=pet_name, species=species)
+        st.session_state.owner.add_pet(new_pet)  # owner.pets updated by method
+        st.session_state.pets.append(new_pet)    # add to session list for UI
+        st.session_state.selected_pet = new_pet
+        st.success(f"Added pet: {pet_name}")
+
+if st.session_state.pets:
+    st.write("**Your pets:**")
+    for pet in st.session_state.pets:
+        st.write(f"- {pet.name} ({pet.species})")
+    
+    pet_names = [p.name for p in st.session_state.pets]
+    selected_name = st.selectbox("Select pet for tasks:", pet_names)
+    st.session_state.selected_pet = next(p for p in st.session_state.pets if p.name == selected_name)
+else:
+    st.warning("Add at least one pet to continue.")
+
 st.markdown("### Tasks")
-st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
+st.caption("Add tasks to the selected pet's schedule.")
 
 if "tasks" not in st.session_state:
     st.session_state.tasks = []
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
 with col2:
     duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
 with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
+with col4:
+    preferred_time = st.selectbox("Preferred time", ["any", "morning", "afternoon", "evening"], index=0)
 
 if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
-    )
+    # Build a Task instance and attach it to the selected Pet.
+    # Pet.add_task() ensures duplicates are ignored and the pet's task list is updated.
+    if st.session_state.selected_pet is None:
+        st.error("Please select a pet first.")
+    else:
+        task = Task(
+            task_id=f"t{len(st.session_state.tasks) + 1}",
+            title=task_title,
+            duration_minutes=int(duration),
+            priority=priority,
+            preferred_time=preferred_time
+        )
+        st.session_state.selected_pet.add_task(task)  # update pet.tasks
+        st.session_state.tasks.append(task)           # keep UI list in session_state
+        st.success(f"Added task '{task_title}' to {st.session_state.selected_pet.name}")
+
 
 if st.session_state.tasks:
-    st.write("Current tasks:")
-    st.table(st.session_state.tasks)
+    st.write("**Current tasks:**")
+    for task in st.session_state.tasks:
+        st.write(f"- {task.title} ({task.duration_minutes} min, priority: {task.priority}, time: {task.preferred_time})")
 else:
     st.info("No tasks yet. Add one above.")
+
 
 st.divider()
 
 st.subheader("Build Schedule")
-st.caption("This button should call your scheduling logic once you implement it.")
+st.caption("Generate a daily schedule based on task priority and available time.")
+
+available_min = st.slider("Available minutes per day:", min_value=30, max_value=480, value=120, step=10)
 
 if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+    # Use the Scheduler class to build a simple period-based schedule.
+    # Pass the owner and selected pet; available minutes are taken from the slider.
+    if st.session_state.selected_pet is None or not st.session_state.tasks:
+        st.warning("Please add a pet and at least one task first.")
+    else:
+        scheduler = Scheduler(owner=st.session_state.owner, pet=st.session_state.selected_pet)
+        schedule = scheduler.generate_schedule(available_minutes=available_min)
+        if schedule:
+            st.success("Schedule generated!")
+            # explain_schedule returns a human-readable summary built from ScheduleItem
+            st.text(scheduler.explain_schedule(schedule))
+        else:
+            st.info("No tasks could be scheduled with the available time.")
+
