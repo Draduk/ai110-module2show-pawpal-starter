@@ -2,9 +2,11 @@ classDiagram
     class Owner {
         +str owner_id
         +str name
+        +int available_minutes_per_day
+        +dict preferences
         +list pets
         +add_pet(pet)
-        +remove_pet(pet)
+        +remove_pet(pet_id)
     }
 
     class Pet {
@@ -14,7 +16,8 @@ classDiagram
         +Owner owner
         +list tasks
         +add_task(task)
-        +remove_task(task)
+        +remove_task(task_id)
+        +get_task(task_id)
     }
 
     class Task {
@@ -22,19 +25,41 @@ classDiagram
         +str title
         +int duration_minutes
         +str priority
+        +str preferred_time
+        +str time
+        +str recurrence
         +str notes
         +bool completed
         +get_priority_score()
+        +get_preferred_time_order()
+        +get_start_minutes()
+        +get_interval()
+        +matches_time_period(period)
+        +mark_complete()
+        +create_next_occurrence()
+    }
+
+    class ScheduleItem {
+        +Task task
+        +str time_of_day
+        +str explanation
+        +formatted_time_range()
     }
 
     class Scheduler {
         +Owner owner
         +Pet pet
         +list tasks
-        +generate_schedule()
-        +sort_tasks_by_priority()
-        +filter_tasks_by_time()
-        +explain_schedule()
+        +__post_init__()
+        +generate_schedule(available_minutes)
+        +sort_tasks_by_priority(tasks)
+        +sort_tasks_by_time(tasks)
+        +filter_tasks(completed, pet_name)
+        +filter_tasks_by_time(tasks, available_minutes)
+        +detect_conflicts(schedule)
+        +get_conflict_warnings(schedule)
+        +explain_schedule(schedule)
+        +mark_task_complete_with_recurrence(task_id)
     }
 
     Owner "1" o-- "*" Pet : owns
@@ -42,3 +67,4 @@ classDiagram
     Scheduler --> Owner : uses
     Scheduler --> Pet : uses
     Scheduler --> Task : schedules
+    Scheduler --> ScheduleItem : creates

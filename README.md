@@ -109,14 +109,57 @@ tests/test_pawpal.py .....                                               [100%]
 | Conflict detection | `Scheduler.detect_conflicts()` / `Scheduler.get_conflict_warnings()` | `detect_conflicts()` checks pairwise interval overlaps for tasks with exact `time`. `get_conflict_warnings()` returns human-readable warnings instead of raising errors.
 | Recurring tasks | `Task.create_next_occurrence()` / `Scheduler.mark_task_complete_with_recurrence()` | When a recurring task (`daily` or `weekly`) is marked complete, `mark_task_complete_with_recurrence()` creates a new `Task` instance for the next occurrence and attaches it to the same pet.
 
-## 📸 Demo Walkthrough
+## ✨ Features
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+Based on the current implementation in `app.py`, `main.py`, and `pawpal_system.py`, PawPal+ includes the following core capabilities:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+- Sorting by time: `Scheduler.sort_tasks_by_time()` orders tasks by exact HH:MM start time when available, then by preferred time period, priority, and duration.
+- Priority-based scheduling: `Scheduler.filter_tasks_by_time()` greedily selects tasks that fit within the available daily minutes.
+- Conflict warnings: `Scheduler.detect_conflicts()` and `Scheduler.get_conflict_warnings()` identify overlapping exact-time tasks and surface clear warnings.
+- Daily and weekly recurrence: `Task.create_next_occurrence()` and `Scheduler.mark_task_complete_with_recurrence()` support recurring tasks for future occurrences.
+- Pet and owner management: `Owner`, `Pet`, and `Task` work together to keep task lists, pet ownership, and schedule data connected.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+## 📋 Demo Walkthrough
+
+The Streamlit app gives a pet owner a simple way to plan care tasks for a pet from start to finish.
+
+1. Main UI features: users can create an owner, add one or more pets, create tasks with a title, duration, priority, preferred time, and optional exact time. They can also generate a daily schedule and review the results in table form.
+2. Example workflow: a user can add a pet such as Mochi, create a few tasks like a morning walk or feeding, and then generate a schedule to see which tasks fit into the available time for the day.
+3. Scheduler behaviors shown: tasks are sorted by time when exact start times are present, the scheduler selects tasks that fit within the available minutes, and overlapping exact-time tasks trigger conflict warnings so the user can adjust the plan.
+4. Recurring tasks are also supported: if a task is marked as daily or weekly, the app can create the next occurrence when that task is completed.
+
+Example CLI output from running `main.py`:
+
+```console
+Tasks for Mochi (owner: Jordan)
+----------------------------------------
+- Morning walk (30min) — 07:00, priority=high, pending [daily]
+- Feeding (10min) — 08:15, priority=high, pending [daily]
+- Vet checkup (20min) — 08:15, priority=high, pending
+- Grooming (40min) — 13:30, priority=medium, pending [weekly]
+- Cleanup (15min) — anytime, priority=medium, done
+
+Tasks for Mochi (owner: Jordan) — pending
+----------------------------------------
+- Morning walk (30min) — 07:00, priority=high, pending [daily]
+- Feeding (10min) — 08:15, priority=high, pending [daily]
+- Vet checkup (20min) — 08:15, priority=high, pending
+- Grooming (40min) — 13:30, priority=medium, pending [weekly]
+
+Tasks for Mochi (owner: Jordan) — recurring only
+----------------------------------------
+- Morning walk (30min) — 07:00, priority=high, pending [daily]
+- Feeding (10min) — 08:15, priority=high, pending [daily]
+- Grooming (40min) — 13:30, priority=medium, pending [weekly]
+
+Schedule for Mochi (owner: Jordan):
+----------------------------------------
+Daily schedule explanation:
+07:00 — Morning walk (30 min, priority: high)
+08:15 — Feeding (10 min, priority: high)
+
+========================================
+SCHEDULE CONFLICTS DETECTED:
+========================================
+⚠️  CONFLICT: 'Feeding' (at 08:15, 10min) overlaps with 'Vet checkup' (at 08:15, 20min)
+```

@@ -125,8 +125,34 @@ if st.button("Add task"):
 
 if st.session_state.tasks:
     st.write("**Current tasks:**")
-    for task in st.session_state.tasks:
-        st.write(f"- {task.title} ({task.duration_minutes} min, priority: {task.priority}, time: {task.preferred_time})")
+    # Use Scheduler to present tasks in a sorted, professional table
+    scheduler = Scheduler(owner=st.session_state.owner, pet=st.session_state.selected_pet)
+    tasks_for_table = []
+    if st.session_state.selected_pet:
+        sorted_tasks = scheduler.sort_tasks_by_time(st.session_state.selected_pet.tasks)
+        for task in sorted_tasks:
+            tasks_for_table.append({
+                "Title": task.title,
+                "Duration (min)": task.duration_minutes,
+                "Time": task.time or "anytime",
+                "Priority": task.priority,
+                "Recurrence": task.recurrence,
+                "Status": "done" if task.completed else "pending",
+            })
+    else:
+        # fallback to unsorted session list
+        for task in st.session_state.tasks:
+            tasks_for_table.append({
+                "Title": task.title,
+                "Duration (min)": task.duration_minutes,
+                "Time": task.time or "anytime",
+                "Priority": task.priority,
+                "Recurrence": task.recurrence,
+                "Status": "done" if task.completed else "pending",
+            })
+
+    if tasks_for_table:
+        st.table(tasks_for_table)
 else:
     st.info("No tasks yet. Add one above.")
 
@@ -145,11 +171,35 @@ if st.button("Generate schedule"):
         st.warning("Please add a pet and at least one task first.")
     else:
         scheduler = Scheduler(owner=st.session_state.owner, pet=st.session_state.selected_pet)
+        # Generate schedule and present as table
         schedule = scheduler.generate_schedule(available_minutes=available_min)
         if schedule:
             st.success("Schedule generated!")
-            # explain_schedule returns a human-readable summary built from ScheduleItem
-            st.text(scheduler.explain_schedule(schedule))
+
+            # Present schedule as a table with columns for time, title, duration, priority
+            schedule_rows = []
+            for item in schedule:
+                schedule_rows.append({
+                    "Time": item.time_of_day,
+                    "Title": item.task.title,
+                    "Duration (min)": item.task.duration_minutes,
+                    "Priority": item.task.priority,
+                    "Note": item.explanation,
+                })
+            st.table(schedule_rows)
+
+            # Show human-readable explanation
+            with st.expander("Why these tasks were chosen", expanded=False):
+                st.text(scheduler.explain_schedule(schedule))
+
+            # Conflict warnings: show prominently but non-blocking
+            warnings = scheduler.get_conflict_warnings(schedule)
+            if warnings:
+                st.warning("Conflicts detected in this schedule. Review and adjust times:")
+                for w in warnings:
+                    st.error(w)
+            else:
+                st.success("No exact-time conflicts detected.")
         else:
             st.info("No tasks could be scheduled with the available time.")
 
